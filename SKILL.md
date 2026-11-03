@@ -1,7 +1,7 @@
 ---
 name: schematize-desktop
 metadata:
-  version: 0.6.0
+  version: 0.7.0
 description: >-
   App desktop/nativo: toolkit de GUI (Slint, Tauri), empacotamento cross-OS, auto-update, estado local, privilégio. Use ao revisar app desktop, instalador, updater ou tauri.conf.json.
 ---
@@ -31,7 +31,7 @@ um serviço do **rol sancionado** (Go/Rust/Elixir/C#/Zig/Ruby) e ao **IAM como a
 
 > **Toolkits:** o rol, o viés (Slint default; egui não como principal) e a licença de cada um moram em `references/toolkits-gui.md` (dono único). O `schematize-updater` é o modelo de updater híbrido (binário|fonte) desacoplado.
 
-**Versão:** skill `schematize-desktop` v0.6.0. Changelog em `CHANGELOG.md`.
+**Versão:** skill `schematize-desktop` v0.7.0. Changelog em `CHANGELOG.md`.
 
 > <!-- herdado:engineering/pisos-22-29:bloco -->**Herda os pisos 22–29 da `schematize-engineering`** (texto completo em `assets/CLAUDE.md` dela): 22 tudo no git — sem remote, push falho ou HEAD≠origin a demanda NÃO se conclui; 23 deploy só do git (VETADO scp/rsync/tar|ssh/docker save|load/git bundle); 24 o ops é o gate da IA — a IA nunca muda a VPS direto nem escreve SQL, só operação nomeada (`ssh vps "ops <op>"`); 25 sem agents inúteis (entregou, morreu); 26 relatório a cada 30 min e handoff a cada 6 h; 27 CI remoto só antes do hml, a pedido ou em tag (`workflow_dispatch` + `hml-*`/`v*`; VETADO `pull_request`, `push` em branch, `workflow_run`, cron sem justificativa); 28 microserviço autônomo (fila durável + 7 testes de resiliência); 29 build/teste na máquina dev/hml quando existe (ponte só no workspace de build, nunca prd) + higiene (`scripts/higiene.sh`).<!-- /herdado -->
 
