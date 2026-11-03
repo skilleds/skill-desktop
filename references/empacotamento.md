@@ -76,7 +76,7 @@ quando existe pro SO/arquitetura do usuário; fallback pra compilar-do-fonte qua
 
 ## 3. Reprodutibilidade e supply chain
 
-- **Build reprodutível/travado:** `Cargo.lock`/lockfile commitado (o app **é** reproduzível), deps
+- **Build reprodutível/travado:** `Cargo.lock`/lockfile commitado e release com `cargo build --locked` (o app **é** reproduzível), deps
   com versão/licença/hash verificados (`cadeia-suprimentos.md`; typosquatting de crate nativo é
   real). **Atenção ao git-dep pinado** — ele reproduz *demais* (versão velha): ver `auto-update.md`.
 - **Sem baixar-e-executar em runtime** sem verificação: se o app puxa um componente pós-install,
@@ -109,3 +109,11 @@ Antes de dizer "distribuível", prove por SO alvo:
 - [ ] instalação **idempotente** e desinstalação **preserva dados** do usuário.
 
 Item sem prova **não** conta como feito (§35).
+
+## 6. Gatilho de CI (piso 27)
+
+A matriz de **3 SOs** (build, assinatura, smoke de pacote) é cara: roda **só em tag** (`v*`),
+**hml** (`hml-*`) ou **a pedido do usuário** (`workflow_dispatch`). Gatilho: `workflow_dispatch` +
+`push: tags: ["hml-*","v*"]`, `concurrency` com `cancel-in-progress: true`, `paths-ignore` de
+docs/md. **Vetado** `pull_request`/`push` em branch. O gate **por commit é local**
+(`scripts/check-*.sh`), não a matriz.

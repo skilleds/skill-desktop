@@ -22,7 +22,7 @@ isto **não é opcional**.
      assinatura), **binário pré-compilado vs compilar-do-fonte (híbrido)**, build assinado no CI,
      smoke de empacotamento.
    - `auto-update.md` — updater **DESACOPLADO** do app, a armadilha do **git-dep pinado no
-     `Cargo.lock`** (`cargo update -p` antes de compilar), **trocar binário em uso**, **matar
+     `Cargo.lock`** (`cargo update -p` explícito e commitado; release `--locked`), **trocar binário em uso**, **matar
      processo antigo + re-exec**, pin/rollback, canal de update verificado.
    - `offline-estado.md` — dirs por SO (XDG/`~/Library`/`%APPDATA%`), estado ≠ cache, **migração de
      schema local reversível**, backup/escrita atômica, sync eventual (herda `offline-sync.md`).

@@ -15,9 +15,9 @@ DESACOPLADO** e **versão embutida sempre coerente**.
 ## 2. A ARMADILHA do git-dep pinado (anti-padrão concreto)
 - Se há dep por **git** no `Cargo.toml`, o **`Cargo.lock` pina o commit** → o build recompila contra
   o commit **VELHO** e o binário **embute versão/comportamento antigo** (o `--version` mente).
-- **Piso:** o build de release roda **`cargo update -p <dep>`** ANTES de `cargo build --release`,
-  pra cada git-dep cujo commit avançou. O **CI prova** que a versão embutida/hash bate com o commit
-  da branch — divergiu, **falha o build** (não publica versão que mente). Vale pra qualquer lockfile
+- **Piso:** `cargo update -p <dep>` é passo **explícito, commitado e pushado** (commit separado do
+  Cargo.lock; fora do build de release). git-deps com `rev =`/`tag =`; o release roda
+  `cargo build --locked` do SHA/tag e **falha** se a versão/hash do git-dep diverge do esperado (não publica versão que mente). Vale pra qualquer lockfile
   que pina fonte VCS.
 
 ## 3. Troca de binário + matar processo antigo + re-exec

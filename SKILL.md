@@ -33,6 +33,8 @@ um serviço do **rol sancionado** (Go/Rust/Elixir/C#/Zig/Ruby) e ao **IAM como a
 
 **Versão:** skill `schematize-desktop` v0.6.0. Changelog em `CHANGELOG.md`.
 
+> Herda os pisos 22–29 da `schematize-engineering` (git como trava de conclusão, deploy só do git, ops é o gate da IA, sem agents inúteis, relatório 30 min/handoff 6 h, CI remoto só antes do hml, microserviço autônomo, build em dev/hml + higiene).
+
 ## Comandos (Claude Code)
 
 Digite `/desktop-help` pra ver todos. Em resumo:
@@ -44,7 +46,7 @@ Digite `/desktop-help` pra ver todos. Em resumo:
 | `/desktop-toolkit` | força/audita a escolha de toolkit de GUI: **um só por produto**, viés Slint, egui não como principal, web-in-native só com justificativa; caça mistura de dois toolkits (fantasma de layout) |
 | `/desktop-bridge` | audita a **ponte web↔nativo**: capabilities/permissions/scopes do **Tauri 2**, isolamento + sandbox + **fuses** do Electron — com gate que reprova |
 | `/desktop-package` | audita/planeja empacotamento e distribuição cross-OS: .deb/.rpm/AppImage/Flatpak, .dmg+notarization, MSI/MSIX+assinatura; binário pré-compilado por SO vs fonte (híbrido); smoke test de pacote |
-| `/desktop-update` | audita/planeja o auto-update **desacoplado**: pin/rollback, a armadilha do **git-dep no Cargo.lock** (`cargo update -p` antes de compilar), trocar binário em uso, **matar processo antigo** + re-exec |
+| `/desktop-update` | audita/planeja o auto-update **desacoplado**: pin/rollback, a armadilha do **git-dep no Cargo.lock** (`cargo update -p` explícito e commitado, build `--locked`), trocar binário em uso, **matar processo antigo** + re-exec |
 | `/desktop-privilege` | audita privilégio e ambiente: root → **usuário real** (nunca /root), elevar só onde precisa, **.desktop Exec absoluto** (PATH do DE), single-instance por lock/socket, IPC local |
 | `/desktop-claude` | cria ou mescla o `CLAUDE.md` sempre-on de desktop na raiz do repo |
 | `/desktop-cc` | context compact: gera handoff no archive e roda `/compact` |
@@ -64,7 +66,7 @@ Os comandos ficam em `assets/commands/` e são instalados em `.claude/commands/`
 3. **Auto-update desacoplado** (`references/auto-update.md`): o updater é **separado do app** (app
    quebrado não trava o update; update quebrado não trava o app), com pin/rollback, e sem a
    armadilha do **git-dep pinado no `Cargo.lock`** (o binário embute versão VELHA se você não
-   `cargo update -p <dep>` antes de compilar). Trocar binário em uso, **matar o processo antigo** e
+   `cargo update -p <dep>` explícito e commitado; release `--locked`). Trocar binário em uso, **matar o processo antigo** e
    re-exec — só fechar a janela não basta.
 4. **Offline-first & estado local** (`references/offline-estado.md`): dados na máquina do usuário,
    cache, sync eventual, **migração de schema local reversível**, backup, e **dirs XDG/por SO** (o
@@ -120,7 +122,7 @@ Independente do reference, estes limites nunca são cruzados:
    do app (crate/binário próprio, como o `schematize-updater`): **app quebrado não trava o update, e
    update quebrado não derruba o app**. E a versão que o binário **reporta** tem de bater com o que
    ele **é** — a armadilha real: **git-dep pinado no `Cargo.lock` faz o build embutir versão/
-   comportamento VELHO**; o build tem de **`cargo update -p <dep>`** antes de compilar. Pós-update:
+   comportamento VELHO**; o `cargo update -p <dep>` é **passo explícito, commitado e pushado** (fora do build de release), git-deps com `rev`/`tag`, e o release roda `cargo build --locked`. Updater **monotônico** (recusa versão menor; downgrade só por rollback assinado). Pós-update:
    **trocar o binário em uso, MATAR o processo antigo** (só fechar a janela não basta) e **re-exec**
    o novo. Suporta **pin/rollback**.
 5. **Launcher com path ABSOLUTO — não depender do PATH do DE.** O `.desktop` `Exec=` (e o atalho no

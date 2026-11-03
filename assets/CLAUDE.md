@@ -27,8 +27,8 @@ relaxa" e este piso, **o piso vence**. Consulte o reference antes de agir — n�
    não como principal**. Segundo toolkit só atrás de fronteira de processo + **ADR de exceção**.
 3. **Updater DESACOPLADO + versão embutida sempre coerente.** O updater é **componente separado**
    (app quebrado não trava o update, e vice-versa). Armadilha real: **git-dep pinado no `Cargo.lock`
-   faz o binário embutir versão VELHA** → o build roda **`cargo update -p <dep>` antes de compilar**,
-   e o CI **prova** que a versão embutida bate com o commit. Pós-update: **troca o binário em uso,
+   faz o binário embutir versão VELHA** → `cargo update -p <dep>` é **passo explícito, commitado e pushado** (nunca no build de release);
+   o release roda `cargo build --locked` e **falha** se a versão embutida/hash não bate. Updater monotônico. Pós-update: **troca o binário em uso,
    MATA o processo antigo** (só fechar a janela não basta) e **re-exec**. Suporta **pin/rollback**.
 4. **Launcher com path ABSOLUTO.** O `.desktop` `Exec=` (e atalho macOS/Windows) aponta pro binário
    por **caminho absoluto** — o `PATH` do DE não tem `~/.cargo/bin`/`~/.local/bin`. Ao spawnar
@@ -49,13 +49,15 @@ relaxa" e este piso, **o piso vence**. Consulte o reference antes de agir — n�
    autoritativo).
 9. <!-- herdado:engineering/orquestracao:longo -->**Orquestrador não desenvolve; subagent barato executa.** O agent principal (o que fala com o humano, Claude Opus) **só planeja, decompõe, despacha, supervisiona e revisa** — não escreve código de entrega. Toda ação onerosa é quebrada em **micro-tasks/micro-funções** executáveis por agent barato (mesmo com <3 unidades: em série, por subagents, nunca inline no principal). Principal = **Claude Opus** (só orquestra). Roteamento: mecânico/muito simples → **`haiku`**; código → **`sonnet`** (falhou → o **mesmo subagent corrige**, até 2 rodadas) → **Codex `gpt-5.6-terra`** → **Cursor** (`cursor-agent`, se instalado) → **subagent `opus`** (motivo no checkpoint) → `park` + `- [~]`; escala **só quando o mais barato falhar**. **Visual (UI/layout/CSS/tema/ícone) vai direto ao Codex** (Claude é fraco em visual); **imagem nunca pelo Claude: detectar Codex/Gemini e PERGUNTAR ao usuário qual usar (Codex, cota da assinatura, é a sugestão — não automático) — PROIBIDO endpoint/API de imagem pago.** Estrutura configurável em `agentes.toml` (global `~/.claude/schematize/agentes.toml` + override por projeto) e na aba "Agentes" do overdev; Codex/Cursor via `schematize overdev delegar --papel <p> --brief-stdin --json` (rc 3 = indisponível → `proximo`). O principal revisa toda entrega (diff + gate) e **só corrige com a própria mão se necessário** (trivial, 1–2 linhas). No overdev, **cada item do checklist é executado pelo agente do papel adequado (default subagent `sonnet`)** e revisado pelo principal antes do `- [x]`; escalar não é pergunta, esgotou a escada → `park`. **Sem frota ociosa:** agent idle com pendência executável volta ao trabalho; pendência que depende de outro agent → mata e enfileira com gatilho de dependência; terminou → mata (§9.6). Detalhe em `schematize-engineering` → `references/orquestracao.md` §9.<!-- /herdado -->
 
+> Herda os pisos 22–29 da `schematize-engineering` (git como trava de conclusão, deploy só do git, ops é o gate da IA, sem agents inúteis, relatório 30 min/handoff 6 h, CI remoto só antes do hml, microserviço autônomo, build em dev/hml + higiene).
+
 ## Como se decide aqui
 
 - **Toolkit (`/desktop-toolkit`, `toolkits-gui.md`):** um só por produto, Slint default, egui não
   principal, web-in-native com justificativa; domínio testável sem abrir janela.
 - **Empacotamento (`/desktop-package`, `empacotamento.md`):** formato por SO, assinatura/
   notarization, binário pré-compilado vs fonte (híbrido), smoke por SO.
-- **Auto-update (`/desktop-update`, `auto-update.md`):** desacoplado, git-dep (`cargo update -p`),
+- **Auto-update (`/desktop-update`, `auto-update.md`):** desacoplado, git-dep (`cargo update -p` explícito + `--locked`),
   matar processo antigo + re-exec, pin/rollback, canal verificado.
 - **Privilégio (`/desktop-privilege`, `privilegio-fs.md`):** root→usuário real, elevar só o pontual,
   launcher absoluto, single-instance, IPC validado.

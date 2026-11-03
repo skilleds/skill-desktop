@@ -4,6 +4,19 @@ Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https:
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 
+## [Não lançado]
+
+### Corrigido
+- P0-3: `cargo update -p <dep>` deixa de ser passo do build/CI de release; é passo explícito, commitado e pushado (piso 22); release usa `cargo build --locked` do SHA/tag e falha se versão/hash do git-dep divergir; git-deps com `rev`/`tag`. Coerente com `empacotamento.md` (Cargo.lock commitado).
+- P0-2: seção "Gatilho de CI" (empacotamento, testes-locais): matriz de 3 SOs só em tag/hml/pedido; gate por commit local (piso 27).
+- P1-21: updater monotônico (recusa versão menor; downgrade só por rollback assinado; freshness do manifesto).
+- P1-20: gate `scripts/check-update-signing.sh` + teste (pubkey/createUpdaterArtifacts do Tauri, `cargo update`/sem `--locked` em workflow). Fonte oficial: https://v2.tauri.app/plugin/updater/ (2026-11-03).
+- P1-1: bloco "Herda os pisos 22–29".
+
+### Pendente
+- [~] P1-22 (EV/SmartScreen, Electron 45/Trusted Signing): sem confirmação em fonte oficial Microsoft/Electron; texto mantido. notarytool/Hardened Runtime não citados (sem fonte oficial consultada).
+- [~] P2-10/P2-12 (aspas em `$confs_tauri`): não triviais sem mudar o coletor; mantido.
+
 ## [0.6.0] — 2026-10-14
 Integração com as 8 skills novas (skill-dev, iam, api, payments, postgres, incident, analytics, git) e saneamento pelo gate novo.
 

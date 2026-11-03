@@ -28,20 +28,28 @@ recompila contra o commit VELHO travado no lock** — e o binário **embute vers
 antigo**, mesmo você "tendo atualizado o código". O `--version` mente, o comportamento é o de ontem,
 e ninguém entende por quê.
 
-**Regra dura:** **antes de compilar um release, o build tem de `cargo update -p <dep>`** (atualizar
-o lock pro commit novo do git-dep). No pipeline:
+**Regra dura:** a causa se resolve **FORA do build de release**. O `cargo update -p <dep>` **nunca**
+roda dentro do build/CI de release (ele mudaria o lock sem ninguém ver, e o release deixaria de ser
+reproduzível). Ele é um **passo EXPLÍCITO, commitado e revisado** (piso 22: tudo no git):
 
 ```bash
-# ANTES de `cargo build --release`, atualize os git-deps pinados no lock:
-cargo update -p schematize-updater   # e cada git-dep cujo commit avançou
-cargo build --release
+# 1) Passo explícito, fora do release: atualiza o git-dep e commita SÓ o lock.
+cargo update -p schematize-updater          # e cada git-dep cujo commit avançou
+git add Cargo.lock && git commit -m "chore(deps): atualiza schematize-updater no lock"
+git push origin main                        # commit separado, revisado, pushado
+
+# 2) Build de release: parte do SHA/tag já pushado e NUNCA toca o lock.
+cargo build --release --locked              # falha se o lock estiver desatualizado
 ```
 
-- **Piso:** **a versão embutida no binário SEMPRE coerente** com o código que ele deveria ser. Se há
-  git-dep, o `cargo update -p` é **parte do build de release**, não um passo opcional que se esquece.
-- **Prova:** o CI roda `cargo update -p <dep>` e depois um teste que compara `binário --version` /
-  hash do git-dep com o commit esperado da branch. Divergiu → build falha (não publica versão que
-  mente).
+- **git-deps travados no `Cargo.toml`:** `schematize-updater = { git = "...", rev = "<sha>" }` (ou
+  `tag = "vX.Y.Z"`), nunca só `branch =`/sem ref. O `rev`/`tag` é o que o revisor lê no diff.
+- **Piso:** **a versão embutida no binário SEMPRE coerente** com o código que ele deveria ser. O
+  `Cargo.lock` é **commitado** (`empacotamento.md` §3) e a atualização dele é um commit próprio.
+- **Prova:** o build de release roda `cargo build --locked` a partir do SHA/tag e um teste compara
+  `binário --version` e o commit/hash do git-dep no lock com o esperado (o `rev`/`tag` do
+  `Cargo.toml`). **Divergiu → o build falha** (não publica versão que mente).
+  O gate `scripts/check-update-signing.sh` reprova `cargo update` e build sem `--locked` em workflow.
 - **Generalização cross-linguagem:** o mesmo vale pra qualquer lockfile que pina fonte VCS
   (`package-lock`/`go.sum` com replace de git, etc.) — lock que pina git reproduz *demais*.
 
@@ -111,14 +119,24 @@ não mata o processo**.
   seja comprometido, e não depende de nenhum certificado de terceiro continuar o mesmo. Se ainda
   quiser pinning de transporte, pine a **chave pública da sua CA** (não a folha), tenha **pin de
   backup**, e um **canal de recuperação** que não dependa do pin.
+- **Updater monotônico (anti-downgrade):** o updater **recusa** versão menor que a instalada —
+  senão um manifesto antigo (replay) reinstala build vulnerável. Downgrade só por **rollback
+  explícito**, com artefato **assinado**. O manifesto de release tem **freshness** (timestamp/serial/
+  expiração assinados, verificados no cliente); manifesto vencido ou serial menor é recusado.
+- **Tauri 2:** `tauri-plugin-updater` exige `plugins.updater.pubkey` (conteúdo da chave, não caminho)
+  e `bundle.createUpdaterArtifacts`; a verificação de assinatura **não pode ser desligada**
+  (✔ doc oficial v2.tauri.app/plugin/updater, 2026-11-03). Gate: `scripts/check-update-signing.sh`.
 - Casa com `privacidade-seguranca.md` (assinatura de binário) e com a `schematize-pentest` (update
   sequestrável é achado de 1ª linha).
 
 ## 6. DoD de auto-update
 
 - [ ] updater é **processo/binário separado** do app (app quebrado ainda atualiza);
-- [ ] build de release roda **`cargo update -p <git-dep>`** antes de compilar; CI **prova** que a
-      versão embutida bate com o commit da branch (sem git-dep mentiroso);
+- [ ] `cargo update -p <git-dep>` é **passo explícito, em commit separado e pushado** (nunca no
+      build de release); git-dep com `rev =`/`tag =`; release roda `cargo build --locked` do SHA/tag
+      e **falha** se versão/hash do git-dep divergir (sem git-dep mentiroso);
+- [ ] **updater monotônico:** recusa versão **menor** que a instalada; downgrade só por **rollback
+      explícito e assinado**; manifesto com **freshness** (data/serial/expiração verificados);
 - [ ] troca de binário testada **nos 3 SOs** (incl. Windows travado); processo antigo é **morto**
       (não só janela fechada) e há **re-exec**;
 - [ ] **pin** respeitado, **rollback** automático em falha de self-check pós-update;

@@ -48,8 +48,8 @@ Bug que só aparece no usuário: compilou, mas o **pacote** não instala/não ab
 O update troca o próprio binário — tem de ser testado como fluxo, não só "o updater compila":
 
 - **vN → vN+1:** instala a versão N, roda o updater, confirma que **virou N+1**, que o **`--version`
-  bate** (pega o **git-dep pinado mentiroso** — `auto-update.md`: o CI roda `cargo update -p <dep>`
-  e **falha se a versão embutida não bate** com o commit da branch), e que o **estado do usuário
+  bate** (pega o **git-dep pinado mentiroso** — `auto-update.md`: o release roda `cargo build --locked`
+  e **falha se a versão embutida não bate** com o `rev`/`tag` do git-dep), e que o **estado do usuário
   sobreviveu** (migração de schema, `offline-estado.md`).
 - **Processo antigo morto + re-exec:** confirma que **não sobrou processo órfão** segurando o
   binário/lock (`privilegio-fs.md`) — não basta a janela ter fechado.
@@ -64,7 +64,7 @@ O update troca o próprio binário — tem de ser testado como fluxo, não só "
 - **Nada de teste silenciado** pra passar CI (`.skip`, comentar assert, baixar threshold) — conserta
   o código (§37).
 - **Flaky de UI** (timing/animação) é caçado, não tolerado: espere por condição, não por `sleep`.
-- **CI por SO** é obrigatório pra tudo que é cross-OS (headless + smoke de pacote + update em
+- **CI por SO** (em tag/hml/pedido, §7) é obrigatório pra tudo que é cross-OS (headless + smoke de pacote + update em
   Linux/macOS/Windows). Um SO sem esses gates **não** está suportado.
 - **Cobertura útil** no domínio; caminhos críticos (migração, update, privilégio root→usuário) com
   teste **explícito**.
@@ -77,4 +77,11 @@ O update troca o próprio binário — tem de ser testado como fluxo, não só "
       absoluto);
 - [ ] **update ponta-a-ponta** (vN→vN+1, versão coerente, estado preservado, processo antigo morto,
       **rollback**, artefato inválido recusado);
-- [ ] sem teste silenciado; flaky de UI caçado; **CI roda nos 3 SOs**.
+- [ ] sem teste silenciado; flaky de UI caçado; **CI dos 3 SOs roda em tag/hml/pedido**.
+
+## 7. Gatilho de CI (piso 27)
+
+Headless + smoke de pacote + update nos **3 SOs** rodam **só em tag/hml/pedido do usuário**
+(`workflow_dispatch` + `push: tags: ["hml-*","v*"]`, `concurrency` `cancel-in-progress: true`,
+`paths-ignore` docs/md; vetado `pull_request`/push em branch). Por commit vale o **gate local**
+(`scripts/check-*.sh`, testes de domínio headless).

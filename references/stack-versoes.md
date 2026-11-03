@@ -35,5 +35,5 @@ segredo publicado), e **UX de massa**: o software se adapta e **nunca culpa o us
 
 > **A armadilha que já custou release aqui:** dependência de **git** no lockfile (`Cargo.lock`
 > pinando um commit velho) faz o build embutir uma versão **antiga** sem avisar. Rode o
-> `cargo update -p <crate>` antes de compilar o release, e faça o `--version` do binário ser
+> `cargo update -p <crate>` como passo explícito e commitado (nunca dentro do build de release; o release usa `--locked`), e faça o `--version` do binário ser
 > gerado do que foi **realmente** compilado.
