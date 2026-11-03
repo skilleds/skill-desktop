@@ -3,6 +3,7 @@
 # Reprova: Tauri com plugin updater sem plugins.updater.pubkey / bundle.createUpdaterArtifacts;
 # workflow que roda `cargo update` ou `cargo build/install` de release sem --locked.
 # uso: check-update-signing.sh [dir]  ·  0 = passa · 1 = REPROVA
+# strict-ok: coletor — soma todos os erros em `erros[]` e reporta de uma vez; com `-e` pararia no primeiro grep sem match
 set -uo pipefail
 raiz="${1:-.}"
 erros=()

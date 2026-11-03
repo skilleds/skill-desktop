@@ -12,7 +12,7 @@ com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 - P1-21: updater monotônico (recusa versão menor; downgrade só por rollback assinado; freshness do manifesto).
 - P1-20: gate `scripts/check-update-signing.sh` + teste (pubkey/createUpdaterArtifacts do Tauri, `cargo update`/sem `--locked` em workflow). Fonte oficial: https://v2.tauri.app/plugin/updater/ (2026-11-03).
 - P1-1: bloco "Herda os pisos 22–29".
-
+- `check-update-signing.sh`: exceção de strict mode declarada (`# strict-ok`: coletor que soma os erros).
 ### Pendente
 - [~] P1-22 (EV/SmartScreen, Electron 45/Trusted Signing): sem confirmação em fonte oficial Microsoft/Electron; texto mantido. notarytool/Hardened Runtime não citados (sem fonte oficial consultada).
 - [~] P2-10/P2-12 (aspas em `$confs_tauri`): não triviais sem mudar o coletor; mantido.
