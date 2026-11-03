@@ -4,7 +4,7 @@ Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https:
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
 
-## [Não lançado]
+## [0.7.0] — 2026-11-03
 
 ### Corrigido
 - P0-3: `cargo update -p <dep>` deixa de ser passo do build/CI de release; é passo explícito, commitado e pushado (piso 22); release usa `cargo build --locked` do SHA/tag e falha se versão/hash do git-dep divergir; git-deps com `rev`/`tag`. Coerente com `empacotamento.md` (Cargo.lock commitado).
